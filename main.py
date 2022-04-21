@@ -1,7 +1,22 @@
-import eel
+import tkinter as tk
+import sqlite3 as sql
 
-eel.init('web')
+con = sql.connect('note.db')
+cur = con.cursor()
+print('done')
 
-#code . . . 
+def main_win():
+	root = tk.Tk()
+	root.title('Notes')
+	root.geometry(str(400)+'x'+str(600))
 
-eel.start('index.html')
+	Label = tk.Label(root, text='Our notes').pack()
+
+	root.mainloop()
+
+def main():
+	pass
+
+if __name__ ==  '__main__':
+	main()
+
