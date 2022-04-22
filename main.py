@@ -28,7 +28,6 @@ def pushTextData():
 	con.commit()
 	createNewNote_Window.destroy()
 
-
 def createNewNote_Win():
 	global createNewNote_Window
 	global entry
