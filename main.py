@@ -1,4 +1,5 @@
 import tkinter as tk
+import tkinter.ttk as ttk
 import sqlite3 as sql
 
 con = sql.connect('note.db')
@@ -7,9 +8,33 @@ cur.execute("""CREATE TABLE IF NOT EXISTS note
 	(id INTEGER PRIMARY KEY, title_note TEXT, text_note TEXT)""")
 print('done')
 
+columns = ['#1', '#2']
+
+def updateTreeview():
+	[treeview.delete(i) for i in treeview.get_children()]
+	loadAllNotes()
+
 def deleteAllNoteFunc():
 	cur.execute("DELETE FROM note")
 	con.commit()
+	updateTreeview()
+
+def loadAllNotes():
+	cur.execute("SELECT * FROM note")
+	res = cur.fetchall()
+
+	print(res)
+	print(len(res))
+
+	for i in res:
+		print('title: '+str(i[1]))
+		print('text: '+str(i[2]))
+		treeview.insert('', index='end', values=(i[1], i[2]))
+
+	con.commit()
+
+def addNewNote(name, text):
+	treeview.insert('', index='end', values=(name, text))
 
 def pushTextData():
 	getEntry = entry.get()
@@ -18,14 +43,12 @@ def pushTextData():
 
 	data = [str(getEntry), str(getText)]
 
-	res = cur.fetchall()
-	print(res)
-
 	cur.execute("INSERT INTO note (title_note, text_note) VALUES (?,?)", data)
 
-	res2 = cur.fetchall()
-	print(res2)
 	con.commit()
+
+	addNewNote(getEntry, getText)
+
 	createNewNote_Window.destroy()
 
 def createNewNote_Win():
@@ -47,14 +70,28 @@ def createNewNote_Win():
 	createNewNote_Btn.pack()
 
 def main_win():
+	global treeview
+	global root
+
 	root = tk.Tk()
 	root.title('Notes')
-	root.geometry('400x600')
+	root.geometry('400x400')
 
 	newNoteBtn = tk.Button(root, text='Create new note', command=createNewNote_Win)
 	newNoteBtn.pack()
 	deleteAllNoteBtn = tk.Button(root, text='Delete all notes', command=deleteAllNoteFunc)
 	deleteAllNoteBtn.pack()
+
+	treeview = ttk.Treeview(root, show='headings', columns=columns)
+
+	treeview.heading('#1', text='Title')
+	treeview.heading('#2', text='Text')
+
+	scrl = ttk.Scrollbar(root, orient=tk.VERTICAL, command=treeview.yview)
+	treeview.configure(yscroll=scrl.set)
+	treeview.pack()
+
+	loadAllNotes()
 
 	root.mainloop()
 
@@ -63,4 +100,3 @@ def main():
 
 if __name__ ==  '__main__':
 	main()
-
