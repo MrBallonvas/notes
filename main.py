@@ -8,7 +8,36 @@ cur.execute("""CREATE TABLE IF NOT EXISTS note
 	(id INTEGER PRIMARY KEY, title_note TEXT, text_note TEXT)""")
 print('done')
 
-columns = ['#1', '#2']
+columns = ['#1', '#2', '#3']
+
+def deleteSelectedNote(val):
+	pass
+
+def showNoteWin(val):
+	showNoteWindow = tk.Tk()
+	showNoteWindow.title('Full note window')
+	showNoteWindow.geometry('500x500')
+
+	lblTitle = tk.Label(showNoteWindow, text='Title:', bg='black', fg='white').pack()
+	title = tk.Label(showNoteWindow, text='\n'+val[1]+'\n')
+	title.pack()
+
+	lblText = tk.Label(showNoteWindow, text='Text:', bg='black', fg='white').pack()
+	text = tk.Label(showNoteWindow, text='\n'+val[2]+'\n')
+	text.pack()
+
+def openFullNote(event):
+	global val
+
+	item = treeview.selection()[0]
+
+	val = treeview.item(item, option='values')
+
+	print(str(val[0]))
+	print(str(val[1]))
+	print(str(val[2]))
+
+	showNoteWin(val)
 
 def updateTreeview():
 	[treeview.delete(i) for i in treeview.get_children()]
@@ -27,14 +56,15 @@ def loadAllNotes():
 	print(len(res))
 
 	for i in res:
+		print('№: '+str(i[0]))
 		print('title: '+str(i[1]))
 		print('text: '+str(i[2]))
-		treeview.insert('', index='end', values=(i[1], i[2]))
+		treeview.insert('', index='end', values=(i[0], i[1], i[2]))
 
 	con.commit()
 
-def addNewNote(name, text):
-	treeview.insert('', index='end', values=(name, text))
+def addNewNote(num, name, text):
+	treeview.insert('', index='end', values=(num, name, text))
 
 def pushTextData():
 	getEntry = entry.get()
@@ -47,7 +77,12 @@ def pushTextData():
 
 	con.commit()
 
-	addNewNote(getEntry, getText)
+	cur.execute('SELECT MAX(`id`) FROM note')
+	a = cur.fetchall()
+
+	print(str(a[0][0]))
+
+	addNewNote(str(a[0][0]), getEntry, getText)
 
 	createNewNote_Window.destroy()
 
@@ -75,7 +110,7 @@ def main_win():
 
 	root = tk.Tk()
 	root.title('Notes')
-	root.geometry('400x400')
+	root.geometry('600x400')
 
 	newNoteBtn = tk.Button(root, text='Create new note', command=createNewNote_Win)
 	newNoteBtn.pack()
@@ -84,12 +119,15 @@ def main_win():
 
 	treeview = ttk.Treeview(root, show='headings', columns=columns)
 
-	treeview.heading('#1', text='Title')
-	treeview.heading('#2', text='Text')
+	treeview.heading('#1', text='№')
+	treeview.heading('#2', text='Title')
+	treeview.heading('#3', text='Text')
 
 	scrl = ttk.Scrollbar(root, orient=tk.VERTICAL, command=treeview.yview)
 	treeview.configure(yscroll=scrl.set)
-	treeview.pack()
+	treeview.pack(side=tk.LEFT)
+
+	treeview.bind("<Double-1>", openFullNote)
 
 	loadAllNotes()
 
