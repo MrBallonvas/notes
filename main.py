@@ -10,13 +10,23 @@ print('done')
 
 columns = ['#1', '#2', '#3']
 
-def deleteSelectedNote(val):
-	pass
+def deleteSelectedNote():
+	cur.execute(f'DELETE FROM note WHERE id = {val[0]}')
 
-def showNoteWin(val):
+	updateTreeview()
+
+	con.commit()
+	showNoteWindow.destroy()
+
+def showNoteWin():
+	global showNoteWindow
+
 	showNoteWindow = tk.Tk()
 	showNoteWindow.title('Full note window')
 	showNoteWindow.geometry('500x500')
+
+	dltBtn = tk.Button(showNoteWindow, text='Delete this note', command=deleteSelectedNote)
+	dltBtn.pack()
 
 	lblTitle = tk.Label(showNoteWindow, text='Title:', bg='black', fg='white').pack()
 	title = tk.Label(showNoteWindow, text='\n'+val[1]+'\n')
@@ -37,7 +47,7 @@ def openFullNote(event):
 	print(str(val[1]))
 	print(str(val[2]))
 
-	showNoteWin(val)
+	showNoteWin()
 
 def updateTreeview():
 	[treeview.delete(i) for i in treeview.get_children()]
